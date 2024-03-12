@@ -27,7 +27,8 @@ Assume you wish to load 160 lines from the end of the file. Dates are assumed to
     - Reverse the list and join the list into a string.
 7. Load it into a Pandas DataFrame and return the exact slice of data required.
 
-The function allows 
+The function allows:
+
     - Loading the last N lines from the end of file
     - Loading the last N lines from a specific date.
 
