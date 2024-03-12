@@ -13,7 +13,16 @@ def csv_loader(
     chunk_size=1024 * 6,
 ) -> pd.DataFrame:
 
-    def get_date(start, chunk) -> datetime:
+    def get_date(start: int, chunk: bytes) -> datetime:
+        """Helper function
+
+        Parse the first occurence of a date string in a chunk at the
+        given start index
+
+        Raises a ValueError if date is invalid or not found
+        """
+
+        # Given the start point date column ends with ','
         end = chunk.find(b",", start)
 
         date_str = chunk[start:end].decode()
@@ -37,9 +46,14 @@ def csv_loader(
     chunks_read = []  # store the bytes chunk in a list
     start_date = None
     prev_chunk_start_line = None
+
+    # Account for public holdays - 3 holidays every 50 days or atleast 3 days
+    # this wont be required for 24x7 markets like Crypto etc
     holiday_offset = max(3, period // 50 * 3)
 
     if end_date:
+        # I used Business day offset (Sat/Sun Off)
+        # For 24x7 markets a regular timedelta would suffice
         start_date = end_date - pd.offsets.BDay(period + holiday_offset)
 
     # Open in binary mode and read from end of file
@@ -48,7 +62,7 @@ def csv_loader(
         # Read the first line of file to get column names
         columns = f.readline()
 
-        curr_pos = size
+        curr_pos = size  # set current position to end of file
 
         while curr_pos > 0:
             read_size = min(chunk_size, curr_pos)
@@ -59,6 +73,7 @@ def csv_loader(
             # From the current position read n bytes
             chunk = f.read(read_size)
 
+            # Get N lines upto end_date
             if end_date:
                 # First line in a chunk may not be complete line
                 # So skip the first line and parse the first date in chunk
@@ -71,6 +86,9 @@ def csv_loader(
                 # start storing chunks once end date has reached
                 if current_dt <= end_date:
                     if prev_chunk_start_line:
+                        # as we append the first chunk, the last line
+                        # may incomplete. We keep a reference to the first line
+                        # of the previous chunk and concat it here.
                         chunk = chunk + prev_chunk_start_line
                         prev_chunk_start_line = None
 
@@ -82,9 +100,12 @@ def csv_loader(
 
                     chunks_read.append(chunk)
                 else:
+                    # Keep a reference to the first line of chunk till we reach
+                    # the current date
                     prev_chunk_start_line = chunk[: chunk.find(b"\n")]
 
             else:
+                # Get N lines from end of file
 
                 if curr_pos == size:
                     # On first chunk, get the last date to calculate start_date
