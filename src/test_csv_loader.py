@@ -14,16 +14,24 @@ class Test_csv_loader(unittest.TestCase):
     partial_1 = "Date,\n2023-12-23,\n2023-12-24,\n2023-12-25,\n2023-12-26,\n"
     partial_2 = "Date,\n2023-12-22,\n2023-12-23,\n2023-12-24,\n"
     partial_3 = "Date,\n2023-12-20,\n2023-12-21,\n2023-12-22,\n2023-12-23,\n"
+    empty = "Date,Open,High,Low,Close,Volume"
 
     def setUp(self) -> None:
         self.file = NamedTemporaryFile(mode="w+", suffix=".csv", delete=False)
         self.fname = Path(self.file.name)
         self.file.write(self.data)
-
         self.file.close()
+
+        self.empty_file = NamedTemporaryFile(
+            mode="w+", suffix=".csv", delete=False
+        )
+        self.emtpy_fname = Path(self.empty_file.name)
+        self.empty_file.write(self.empty)
+        self.empty_file.close()
 
     def tearDown(self) -> None:
         os.remove(self.fname)
+        os.remove(self.emtpy_fname)
 
     def test_tiny_file(self):
         """Test returns entire data as DataFrame"""
@@ -87,14 +95,11 @@ class Test_csv_loader(unittest.TestCase):
     def test_out_of_bounds_end_date(self):
         """Test raises IndexError"""
 
-        size = os.path.getsize(self.fname)
-
         with self.assertRaises(IndexError):
             csv_loader(
                 self.fname,
                 end_date=datetime(2023, 12, 15),
                 period=3,
-                chunk_size=size // 2,
             )
 
     def test_end_date_with_out_of_bounds_start_date(self):
@@ -113,3 +118,12 @@ class Test_csv_loader(unittest.TestCase):
         )
 
         pd.testing.assert_frame_equal(df, expected_df)
+
+    def test_end_date_with_empty_file(self):
+        """Test raises a ValueError"""
+
+        with self.assertRaises(ValueError):
+            csv_loader(
+                self.emtpy_fname,
+                end_date=datetime(2024, 1, 18),
+            )
