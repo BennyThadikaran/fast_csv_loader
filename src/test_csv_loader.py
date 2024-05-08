@@ -120,10 +120,11 @@ class Test_csv_loader(unittest.TestCase):
         pd.testing.assert_frame_equal(df, expected_df)
 
     def test_end_date_with_empty_file(self):
-        """Test raises a ValueError"""
+        """Test returns an emtpy DataFrame"""
 
-        with self.assertRaises(ValueError):
-            csv_loader(
-                self.emtpy_fname,
-                end_date=datetime(2024, 1, 18),
-            )
+        df = csv_loader(
+            self.emtpy_fname,
+            end_date=datetime(2024, 1, 18),
+        )
+
+        self.assertTrue(df.empty)
