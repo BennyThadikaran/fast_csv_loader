@@ -28,11 +28,9 @@ def csv_loader(
         date_str = chunk[start:end].decode()
 
         if len(date_str) > 10:
-            date = datetime.strptime(date_str[:16], datetime_fmt)
-        else:
-            date = datetime.strptime(date_str, date_fmt)
-
-        return date
+            return datetime.strptime(date_str[:16], datetime_fmt)
+        
+        return datetime.strptime(date_str, date_fmt)
 
     size = os.path.getsize(file_path)
     datetime_fmt = "%Y-%m-%d %H:%M"
@@ -81,7 +79,11 @@ def csv_loader(
 
                 start = newline_index + 1
 
-                current_dt = get_date(start, chunk)
+                try:
+                    current_dt = get_date(start, chunk)
+                except ValueError:
+                    chunks_read.append(chunk)
+                    break
 
                 # start storing chunks once end date has reached
                 if current_dt <= end_date:
