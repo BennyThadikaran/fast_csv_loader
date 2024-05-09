@@ -47,17 +47,18 @@ def csv_loader(
     is_24_7=False,
     chunk_size=1024 * 6,
 ) -> pd.DataFrame
-    """
-    Parameters:
-    - file_path (Path): The path to the CSV file to be loaded.
-    - period (int): Number of klines/candles to return. Default is 160.
-    - end_date (Optional[datetime]): end date until which data should be loaded.
-    - is_24_7 (bool): Indicates whether the data represents a 24/7 market.
-        If False, weekends (Sat/Sun) is not counted in periods.
-    - chunk_size (int): The size of data chunks to be loaded into memory at once,
-        in bytes. Default is 6144 bytes (6 KB).
-    """
 ```
+
+Parameters:
+
+- `file_path (Path)`: The path to the CSV file to be loaded.
+- `period (int)`: Number of klines/candles to return. Default is 160.
+- `end_date (Optional[datetime])`: end date until which data should be loaded.
+    - If None, will load the last N `periods`.
+    - If date is provided, will load the last N `periods` upto `end_date`
+- `is_24_7 (bool)`: Indicates whether the data represents a 24/7 market. If False, weekends (Sat/Sun) is not counted in periods.
+- `chunk_size (int)`: The size of data chunks to be loaded into memory at once, in bytes. Default is 6144 bytes (6 KB).
+        
 I chose 6Kb chunk size based on testing with my specific requirements.
 
 `csv_loader.py` is the main file containing the function.
