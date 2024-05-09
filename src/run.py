@@ -6,13 +6,13 @@ import os
 from pathlib import Path
 
 
-def read_csv(fpath, end_date=None):
+def read_csv(fpath, end_date=None, period=160):
     df = pd.read_csv(fpath, index_col="Date", parse_dates=["Date"])
 
     if end_date:
-        return df.loc[:end_date].iloc[-160:]
+        return df.loc[:end_date].iloc[-period:]
 
-    return df.iloc[-160:]
+    return df.iloc[-period:]
 
 
 def print_perf(fn, seconds, base_time=None):
