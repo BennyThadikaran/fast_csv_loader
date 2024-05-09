@@ -10,6 +10,7 @@ def csv_loader(
     file_path: Path,
     period=160,
     end_date: Optional[datetime] = None,
+    is_24_7=False,
     chunk_size=1024 * 6,
 ) -> pd.DataFrame:
 
@@ -27,14 +28,9 @@ def csv_loader(
 
         date_str = chunk[start:end].decode()
 
-        if len(date_str) > 10:
-            return datetime.strptime(date_str[:16], datetime_fmt)
-        
-        return datetime.strptime(date_str, date_fmt)
+        return pd.to_datetime(date_str)
 
     size = os.path.getsize(file_path)
-    datetime_fmt = "%Y-%m-%d %H:%M"
-    date_fmt = "%Y-%m-%d"
 
     if size <= chunk_size and not end_date:
         return pd.read_csv(
@@ -49,16 +45,24 @@ def csv_loader(
     # this wont be required for 24x7 markets like Crypto etc
     holiday_offset = max(3, period // 50 * 3)
 
-    if end_date:
-        # I used Business day offset (Sat/Sun Off)
-        # For 24x7 markets a regular timedelta would suffice
-        start_date = end_date - pd.offsets.BDay(period + holiday_offset)
-
     # Open in binary mode and read from end of file
     with file_path.open(mode="rb") as f:
 
         # Read the first line of file to get column names
         columns = f.readline()
+
+        if end_date:
+            dt = get_date(0, f.readline())
+
+            if dt.tzinfo:
+                end_date = end_date.astimezone(dt.tzinfo)
+
+            if is_24_7:
+                # For 24x7 markets, we still add a holiday_offset
+                start_date = end_date - pd.offsets.Day(period + holiday_offset)
+            else:
+                # Business day offset (Sat/Sun Off)
+                start_date = end_date - pd.offsets.BDay(period + holiday_offset)
 
         curr_pos = size  # set current position to end of file
 
