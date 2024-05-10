@@ -38,7 +38,14 @@ def csv_loader(
 
         date_str = chunk[start:end].decode()
 
-        return pd.to_datetime(date_str)
+        # empty string returns NaT
+        dt = pd.to_datetime(date_str)
+
+        # Guard against NaT values
+        if pd.isna(dt):
+            raise ValueError("Not a Date")
+
+        return dt
 
     size = os.path.getsize(file_path)
 
