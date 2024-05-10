@@ -83,7 +83,10 @@ def csv_loader(
 
         curr_pos = size  # set current position to end of file
 
-        while curr_pos > 0:
+        while curr_pos >= 0:
+            if curr_pos == 0:
+                break
+
             read_size = min(chunk_size, curr_pos)
 
             # Set the current read position in the file
