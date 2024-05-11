@@ -16,12 +16,14 @@ def csv_loader(
     """
     Parameters:
     - file_path (Path): The path to the CSV file to be loaded.
-    - period (int): Number of klines/candles to return. Default is 160.
-    - end_date (Optional[datetime]): end date until which data should be loaded.
+    - period (int): Number of lines/candles to return. The default is 160.
+    - end_date (Optional[datetime]): Load N lines up to this date.
+        - If None, will load the last N lines
+        - If the date provided, load the last N lines till this date
     - is_24_7 (bool): Indicates whether the data represents a 24/7 market.
-        If False, weekends (Sat/Sun) is not counted in periods.
-    - chunk_size (int): The size of data chunks to be loaded into memory at once,
-        in bytes. Default is 6144 bytes (6 KB).
+        If False, weekends (Sat/Sun) are not included.
+    - chunk_size (int): The size of data chunks loaded into memory.
+        The default is 6144 bytes (6 KB).
     """
 
     def get_date(start: int, chunk: bytes) -> datetime:
