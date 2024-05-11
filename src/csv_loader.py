@@ -51,6 +51,8 @@ def csv_loader(
 
     size = os.path.getsize(file_path)
 
+    timedelta_fn = pd.offsets.Day if is_24_7 else pd.offsets.BDay
+
     if size <= chunk_size and not end_date:
         return pd.read_csv(
             file_path, index_col="Date", parse_dates=["Date"]
@@ -76,12 +78,7 @@ def csv_loader(
             if dt.tzinfo:
                 end_date = end_date.astimezone(dt.tzinfo)
 
-            if is_24_7:
-                # For 24x7 markets, we still add a holiday_offset
-                start_date = end_date - pd.offsets.Day(period + holiday_offset)
-            else:
-                # Business day offset (Sat/Sun Off)
-                start_date = end_date - pd.offsets.BDay(period + holiday_offset)
+            start_date = end_date - timedelta_fn(period + holiday_offset)
 
         curr_pos = size  # set current position to end of file
 
@@ -142,9 +139,7 @@ def csv_loader(
                     start = last_newline_index + 1
                     last_dt = get_date(start, chunk)
 
-                    start_date = last_dt - pd.offsets.BDay(
-                        period + holiday_offset
-                    )
+                    start_date = last_dt - timedelta_fn(period + holiday_offset)
 
                 # First line may not be a complete line.
                 # To skip this line, find the first newline character
@@ -160,7 +155,7 @@ def csv_loader(
                     break
 
                 if start_date is None:
-                    start_date = datetime.now() - pd.offsets.BDay(
+                    start_date = datetime.now() - timedelta_fn(
                         period + holiday_offset
                     )
 
