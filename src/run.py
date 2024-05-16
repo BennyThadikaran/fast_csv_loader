@@ -1,6 +1,7 @@
 import timeit
 from datetime import datetime
-from csv_loader import csv_loader
+from csv_loader import csv_loader_v1 as v1
+from csv_loader_v2 import csv_loader_v2 as v2
 import pandas as pd
 import os
 from pathlib import Path
