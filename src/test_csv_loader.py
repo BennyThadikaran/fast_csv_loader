@@ -1,129 +1,191 @@
-import os
-import io
+import tempfile
 import pandas as pd
-from datetime import datetime
-from tempfile import NamedTemporaryFile
-from csv_loader import csv_loader
+import numpy as np
+from csv_loader_v2 import csv_loader_v2
 from pathlib import Path
 import unittest
 
 
-class Test_csv_loader(unittest.TestCase):
+def generate_random_prices(
+    start_date, end_date, freq="D", tz=None, index_col="Date"
+):
+    """
+    Generate random prices for a given date range.
+    """
+    date_range = pd.date_range(start=start_date, end=end_date, freq=freq, tz=tz)
 
-    data = "Date,\n2023-12-20,\n2023-12-21,\n2023-12-22,\n2023-12-23,\n2023-12-24,\n2023-12-25,\n2023-12-26,\n"
-    partial_1 = "Date,\n2023-12-23,\n2023-12-24,\n2023-12-25,\n2023-12-26,\n"
-    partial_2 = "Date,\n2023-12-22,\n2023-12-23,\n2023-12-24,\n"
-    partial_3 = "Date,\n2023-12-20,\n2023-12-21,\n2023-12-22,\n2023-12-23,\n"
-    empty = "Date,Open,High,Low,Close,Volume"
+    prices = np.random.randint(10, 100, size=len(date_range))
+
+    df = pd.DataFrame({index_col: date_range, "Price": prices})
+    df[index_col] = pd.to_datetime(df[index_col])
+    return df.set_index(index_col, drop=True)
+
+
+class Test_csv_loader_v2(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.file = NamedTemporaryFile(mode="w+", suffix=".csv", delete=False)
-        self.fname = Path(self.file.name)
-        self.file.write(self.data)
-        self.file.close()
-
-        self.empty_file = NamedTemporaryFile(
-            mode="w+", suffix=".csv", delete=False
-        )
-        self.emtpy_fname = Path(self.empty_file.name)
-        self.empty_file.write(self.empty)
-        self.empty_file.close()
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            self.fname = Path(f.name)
 
     def tearDown(self) -> None:
-        os.remove(self.fname)
-        os.remove(self.emtpy_fname)
+        self.fname.unlink()
 
     def test_tiny_file(self):
         """Test returns entire data as DataFrame"""
 
-        size = os.path.getsize(self.fname)
+        expected = generate_random_prices("2023-01-01", "2023-01-31")
+        expected.to_csv(self.fname)
 
-        df = csv_loader(self.fname, chunk_size=size + 10)
+        df = csv_loader_v2(self.fname)
 
-        expected_df = pd.read_csv(
-            self.fname, index_col="Date", parse_dates=["Date"]
-        )
-
-        pd.testing.assert_frame_equal(df, expected_df)
+        pd.testing.assert_frame_equal(df, expected)
 
     def test_large_file(self):
-        """Expect test to return a partial data as DataFrame"""
+        """Returns a DataFrame of length 160"""
 
-        size = os.path.getsize(self.fname)
+        df = generate_random_prices("2020-01-01", "2023-12-30")
+        df.to_csv(self.fname)
 
-        df = csv_loader(self.fname, period=4, chunk_size=size // 2)
+        df = csv_loader_v2(self.fname, chunk_size=1024 * 2)
+        self.assertEqual(len(df), 160)
 
-        expected_df = pd.read_csv(
-            io.StringIO(self.partial_1),
-            index_col="Date",
-            parse_dates=["Date"],
+    def test_intraday_data(self):
+        """Returns a DataFrame of length 160"""
+
+        df = generate_random_prices(
+            "2023-01-01T00:00",
+            "2023-01-15T12:00",
+            freq="15min",
+            tz="America/New_York",
         )
 
-        pd.testing.assert_frame_equal(df, expected_df)
+        df.to_csv(self.fname)
 
-    def test_date_out_of_bounds(self):
-        """Expect test to returns entire data as DataFrame"""
+        df = csv_loader_v2(self.fname, chunk_size=1024 * 2)
+        self.assertEqual(len(df), 160)
 
-        size = os.path.getsize(self.fname)
+    def test_empty_file(self):
+        """Raises pandas.Errors.EmptyDataError"""
 
-        df = csv_loader(self.fname, chunk_size=size + 10)
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            fname = Path(f.name)
 
-        expected_df = pd.read_csv(
-            self.fname, index_col="Date", parse_dates=["Date"]
-        )
+        with self.assertRaises(pd.errors.EmptyDataError):
+            csv_loader_v2(fname)
 
-        pd.testing.assert_frame_equal(df, expected_df)
+        fname.unlink()
+
+    def test_empty_file_with_column_header(self):
+        """Returns an emtpy DataFrame"""
+
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            fname = Path(f.name)
+            f.write(b"Date,Price\n")
+
+        df = csv_loader_v2(fname)
+        self.assertTrue(df.empty)
+
+        fname.unlink()
 
     def test_end_date(self):
         """Test returns partial data upto end date"""
 
-        size = os.path.getsize(self.fname)
+        df = generate_random_prices("2020-01-01", "2023-12-31")
+        df.to_csv(self.fname)
 
-        df = csv_loader(
+        expected = df.loc[:"2023-11-30"].iloc[-400:]
+
+        df = csv_loader_v2(
             self.fname,
-            end_date=datetime(2023, 12, 24),
-            period=3,
-            chunk_size=size // 2,
+            end_date=pd.to_datetime("2023-11-30"),
+            period=400,
+            chunk_size=1024 * 3,
         )
 
-        expected_df = pd.read_csv(
-            io.StringIO(self.partial_2), index_col="Date", parse_dates=["Date"]
+        pd.testing.assert_frame_equal(df, expected)
+
+    def test_end_date_with_intraday_data(self):
+        """Returns a DataFrame of length 160"""
+
+        df = generate_random_prices(
+            "2023-01-01T00:00",
+            "2023-01-15T12:00",
+            freq="15min",
+            tz="America/New_York",
         )
 
-        pd.testing.assert_frame_equal(df, expected_df)
+        df.to_csv(self.fname)
 
-    def test_out_of_bounds_end_date(self):
+        df = csv_loader_v2(
+            self.fname,
+            chunk_size=1024 * 2,
+            end_date=pd.to_datetime("2023-01-10T15:30"),
+        )
+
+        end_date = pd.to_datetime("2023-01-10T15:30").tz_localize(
+            "America/New_York"
+        )
+
+        self.assertEqual(len(df), 160)
+        self.assertEqual(df.index[-1], end_date)
+
+    def test_end_date_with_tz_aware_dates(self):
+        """Test returns partial data upto end date"""
+
+        df = generate_random_prices(
+            "2020-01-01", "2023-12-31", tz="America/New_York"
+        )
+
+        df.to_csv(self.fname)
+
+        df = csv_loader_v2(
+            self.fname,
+            end_date=pd.to_datetime("2023-11-30"),
+        )
+
+        end_date = pd.to_datetime("2023-11-30").tz_localize("America/New_York")
+
+        self.assertEqual(df.index[-1], end_date)
+        self.assertEqual(len(df), 160)
+
+    def test_out_of_bounds_end_date_small_file(self):
         """Test raises IndexError"""
 
+        df = generate_random_prices("2023-01-01", "2023-01-31")
+        df.to_csv(self.fname)
+
         with self.assertRaises(IndexError):
-            csv_loader(
+            csv_loader_v2(
                 self.fname,
-                end_date=datetime(2023, 12, 15),
-                period=3,
+                period=20,
+                end_date=pd.to_datetime("2022-12-28"),
             )
 
-    def test_end_date_with_out_of_bounds_start_date(self):
+    def test_out_of_bounds_end_date_large_file(self):
+        """Test raises IndexError"""
+
+        df = generate_random_prices("2020-01-01", "2023-12-31")
+        df.to_csv(self.fname)
+
+        with self.assertRaises(IndexError):
+            csv_loader_v2(
+                self.fname,
+                period=20,
+                end_date=pd.to_datetime("2019-12-28"),
+            )
+
+    def test_end_date_with_data_less_than_period(self):
         """Test return data from start of file to end date"""
 
-        size = os.path.getsize(self.fname)
+        df = generate_random_prices("2023-01-01", "2023-01-31")
+        df.to_csv(self.fname)
 
-        df = csv_loader(
+        expected = df.loc[:"2023-01-10"]
+
+        df = csv_loader_v2(
             self.fname,
-            end_date=datetime(2023, 12, 23),
-            chunk_size=size // 2,
+            period=20,
+            end_date=pd.to_datetime("2023-01-10"),
         )
 
-        expected_df = pd.read_csv(
-            io.StringIO(self.partial_3), index_col="Date", parse_dates=["Date"]
-        )
-
-        pd.testing.assert_frame_equal(df, expected_df)
-
-    def test_end_date_with_empty_file(self):
-        """Test raises a ValueError"""
-
-        with self.assertRaises(ValueError):
-            csv_loader(
-                self.emtpy_fname,
-                end_date=datetime(2024, 1, 18),
-            )
+        pd.testing.assert_frame_equal(df, expected)
