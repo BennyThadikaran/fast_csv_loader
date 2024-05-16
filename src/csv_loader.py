@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 
-def csv_loader(
+def csv_loader_v1(
     file_path: Path,
     period=160,
     end_date: Optional[datetime] = None,
