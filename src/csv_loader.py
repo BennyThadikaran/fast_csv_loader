@@ -189,18 +189,3 @@ def csv_loader_v1(
         return df.loc[:end_date].iloc[-period:]
     else:
         return df.iloc[-period:]
-
-
-if __name__ == "__main__":
-    from datetime import datetime
-
-    file_path = Path("./test_data/algousdt.csv")
-
-    df = csv_loader(file_path)
-    print(df)
-
-    df = csv_loader(file_path, end_date=datetime(2024, 1, 18, 15, 0))
-    print(df)
-
-    df = csv_loader(file_path, period=2, end_date=datetime(2024, 1, 18, 15, 0))
-    print(df)
