@@ -58,11 +58,18 @@ for sym in sym_list:
     print_perf(read_csv, regular_time)
 
     ts = timeit.timeit(
-        stmt=lambda: csv_loader(file_path),
+        stmt=lambda: v1(file_path),
         number=100,
     )
 
-    print_perf(csv_loader, ts, base_time=regular_time)
+    print_perf(v1, ts, base_time=regular_time)
+
+    ts1 = timeit.timeit(
+        stmt=lambda: v2(file_path),
+        number=100,
+    )
+
+    print_perf(v2, ts1, base_time=regular_time)
 
 
 # Second test - end_date
@@ -82,8 +89,15 @@ for sym in sym_list:
     print_perf(read_csv, regular_time)
 
     ts = timeit.timeit(
-        stmt=lambda: csv_loader(file_path, end_date=dt),
+        stmt=lambda: v1(file_path, end_date=dt),
         number=100,
     )
 
-    print_perf(csv_loader, ts, base_time=regular_time)
+    print_perf(v1, ts, base_time=regular_time)
+
+    ts1 = timeit.timeit(
+        stmt=lambda: v2(file_path, end_date=dt),
+        number=100,
+    )
+
+    print_perf(v2, ts1, base_time=regular_time)
