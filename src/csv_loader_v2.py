@@ -13,6 +13,17 @@ def csv_loader_v2(
     date_column: str = "Date",
     chunk_size: int = 1024 * 6,
 ) -> pd.DataFrame:
+    """
+    Load a CSV file with timeseries data in chunks from the end.
+    - file_path (Path): The path to the CSV file to be loaded.
+    - period (int): Number of lines/candles to return. The default is 160.
+    - end_date (Optional[datetime]): Load N lines up to this date.
+        - If None, will load the last N lines from file
+        - If the date is provided, load the last N lines from this date
+    - date_column_name (str): Name of the date column. Defaults to `Date`
+    - chunk_size (int): The size of data chunks loaded into memory.
+        The default is 6144 bytes (6 KB).
+    """
 
     def get_date(start: int, chunk: bytes) -> datetime:
         """Helper function
