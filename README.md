@@ -8,11 +8,11 @@ The function allows:
 
 It can load any type of time-series (both timezone aware and Naive) and daily or intraday data.
 
-## Update csv_loader_v2 - 17th May 2024
+## Update `csv_loader_v2` - 17th May 2024
 
 `csv_loader_v2` is the latest update and recommended to use. 
 
-- It is faster than the previous version and more robust.
+- It is faster than the previous version and more robust. See [performance below](#performance).
 - If a file is less than 19kb or less than chunk size it is fully loaded into memory and returned. This is faster for smaller files.
 - Algorithm has been simplified to run faster.
 - Unit tests has been rewritten to cover a wide variety of scenarios.
@@ -22,7 +22,7 @@ It can load any type of time-series (both timezone aware and Naive) and daily or
 There will be no further development or bugfix on `csv_loader_v1`. I have left it here for comparison and will eventually be removed.
 
 
-## Performance - 
+## Performance
 Loading a portion of a large file is significantly faster than loading the entire file in memory. Files used in the test were not particularly large. You may need to tweak the chunk_size parameter for your use case.
 
 It is slower for smaller files or if you're loading nearly the entire portion of the file.
