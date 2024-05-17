@@ -18,7 +18,7 @@ def csv_loader_v1(
     - file_path (Path): The path to the CSV file to be loaded.
     - period (int): Number of lines/candles to return. The default is 160.
     - end_date (Optional[datetime]): Load N lines up to this date.
-        - If None, will load the last N lines
+        - If None, will load the last N lines from file
         - If the date provided, load the last N lines till this date
     - is_24_7 (bool): Indicates whether the data represents a 24/7 market.
         If False, weekends (Sat/Sun) are not included.
