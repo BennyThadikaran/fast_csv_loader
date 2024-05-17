@@ -1,6 +1,6 @@
 import timeit
 from datetime import datetime
-from csv_loader import csv_loader_v1 as v1
+from csv_loader_v1 import csv_loader_v1 as v1
 from csv_loader_v2 import csv_loader_v2 as v2
 import pandas as pd
 import os
@@ -42,12 +42,13 @@ sym_list = (
 )
 
 dt = datetime(2023, 1, 1)
+DIR = Path(__file__).parent
 
 # First test - Default arguments
 print("Load last 160 lines")
 
 for sym in sym_list:
-    file_path = Path(f"./test_data/{sym}.csv")
+    file_path = DIR / f"test_data/{sym}.csv"
 
     size = os.path.getsize(file_path) / 1024
 
@@ -76,7 +77,7 @@ for sym in sym_list:
 print("\nLoad 160 lines upto 1st Jan 2023")
 
 for sym in sym_list:
-    file_path = Path(f"./test_data/{sym}.csv")
+    file_path = DIR / f"test_data/{sym}.csv"
 
     size = os.path.getsize(file_path) / 1024
 
