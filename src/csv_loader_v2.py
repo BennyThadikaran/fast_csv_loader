@@ -58,7 +58,12 @@ def csv_loader_v2(
         )
 
         if end_date:
-            if not df.empty and end_date < df.index[0]:
+            dt = df.index[0]
+
+            if isinstance(dt, pd.Timestamp) and dt.tzinfo:
+                end_date = end_date.replace(tzinfo=dt.tzinfo)
+
+            if not df.empty and end_date < dt:
                 raise IndexError("Date out of bounds of current DataFrame")
 
             return df.loc[:end_date].iloc[-period:]
