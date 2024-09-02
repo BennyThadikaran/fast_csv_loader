@@ -1,9 +1,10 @@
 import io
 import os
-from typing import Optional
-import pandas as pd
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
+
+import pandas as pd
 
 
 def csv_loader_v2(
