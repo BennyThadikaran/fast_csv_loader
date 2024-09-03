@@ -178,6 +178,6 @@ def csv_loader_v2(
     )
 
     if end_date:
-        return df.loc[:end_date].iloc[-period:]
+        return df.loc[df.index <= end_date].iloc[-period:]
     else:
         return df.iloc[-period:]
