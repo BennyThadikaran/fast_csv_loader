@@ -137,7 +137,6 @@ def csv_loader_v2(
                     # Count N periods from end_date
                     if lines_read >= period:
                         chunks_read.append(chunk[start + 1 :])
-                        chunks_read.append(columns)
                         break
 
                     chunks_read.append(chunk)
@@ -154,7 +153,6 @@ def csv_loader_v2(
                 if lines_read >= period:
                     start = chunk.find(b"\n") + 1
                     chunks_read.append(chunk[start:])
-                    chunks_read.append(columns)
                     break
 
                 # we are storing the chunks in bottom first order.
@@ -169,6 +167,7 @@ def csv_loader_v2(
 
         # Reverse the list and join it into a bytes string.
         # Store the result in a buffer
+        chunks_read.append(columns)
         buffer = io.BytesIO(b"".join(chunks_read[::-1]))
 
     df = pd.read_csv(
