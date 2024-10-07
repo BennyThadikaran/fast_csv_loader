@@ -12,6 +12,7 @@ def csv_loader_v2(
     period: int = 160,
     end_date: Optional[datetime] = None,
     date_column: str = "Date",
+    date_format: Optional[str] = None,
     chunk_size: int = 1024 * 6,
 ) -> pd.DataFrame:
     """
@@ -22,6 +23,7 @@ def csv_loader_v2(
         - If None, will load the last N lines from file
         - If the date is provided, load the last N lines from this date
     - date_column_name (str): Name of the date column. Defaults to `Date`
+    - date_format (Optional[str]): Custom date format in case pandas is unable to parse Date column.
     - chunk_size (int): The size of data chunks loaded into memory.
         The default is 6144 bytes (6 KB).
     """
@@ -56,6 +58,7 @@ def csv_loader_v2(
             file_path,
             index_col=date_column,
             parse_dates=[date_column],
+            date_format=date_format,
         )
 
         if end_date:
@@ -174,6 +177,7 @@ def csv_loader_v2(
         buffer,
         parse_dates=[date_column],
         index_col=date_column,
+        date_format=date_format,
     )
 
     if end_date:

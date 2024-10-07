@@ -1,5 +1,6 @@
 # csv_loader.py
-The `csv_loader` function efficiently loads a partial portion of a large CSV file containing time-series data into a pandas DataFrame. 
+
+The `csv_loader` function efficiently loads a partial portion of a large CSV file containing time-series data into a pandas DataFrame.
 
 The function allows:
 
@@ -10,19 +11,21 @@ It can load any type of time-series (both timezone aware and Naive) and daily or
 
 ## Update `csv_loader_v2` - 17th May 2024
 
-`csv_loader_v2` is the latest update and recommended to use. 
+**7th Oct 2024** - Added support for custom date format. In case Pandas is unable to parse the date column.
+
+`csv_loader_v2` is the latest update and recommended to use.
 
 - It is faster than the previous version and more robust. See [performance below](#performance).
 - If a file is less than 19kb or less than chunk size it is fully loaded into memory and returned. This is faster for smaller files.
 - Algorithm has been simplified to run faster.
 - Unit tests has been rewritten to cover a wide variety of scenarios.
 
-`csv_loader_v1` is the original version and works well for daily data, but had issues loading intraday data due to its underlying algorithm. 
+`csv_loader_v1` is the original version and works well for daily data, but had issues loading intraday data due to its underlying algorithm.
 
 There will be no further development or bugfix on `csv_loader_v1`. I have left it here for comparison and will eventually be removed.
 
-
 ## Performance
+
 Loading a portion of a large file is significantly faster than loading the entire file in memory. Files used in the test were not particularly large. You may need to tweak the chunk_size parameter for your use case.
 
 It is slower for smaller files or if you're loading nearly the entire portion of the file.
@@ -42,13 +45,13 @@ Assume you wish to load 160 lines from the end of the file. Dates can be any for
 1. Read the first line to get the column header.
 2. Seek to the end of the file.
 3. Read the last N bytes (Chunk) of the file.
-4. On the first chunk, get a count of line breaks (`\n`) in the chunk to estimate lines per chunk. 
+4. On the first chunk, get a count of line breaks (`\n`) in the chunk to estimate lines per chunk.
 5. On every chunk,
-    - Update the number of lines read by adding the lines per chunk.
-    - Store the chunks in a list
-6. Once we have the desired number of lines, 
-    - Combine the column header and final chunk, append it to the list
-    - Reverse the list and join the list into a string.
+   - Update the number of lines read by adding the lines per chunk.
+   - Store the chunks in a list
+6. Once we have the desired number of lines,
+   - Combine the column header and final chunk, append it to the list
+   - Reverse the list and join the list into a string.
 7. Load it into a Pandas DataFrame and return the slice of data required.
 
 If end_date argument is specified, we parse the first date string in the chunk and check if we're past the end_date. If yes, we continue from Step 5, until desired number of lines have been loaded.
@@ -75,12 +78,13 @@ Parameters:
 - file_path (Path): The path to the CSV file to be loaded.
 - period (int): Number of lines/candles to return. The default is 160.
 - end_date (Optional[datetime]): Load N lines up to this date.
-    - If None, will load the last N lines from file
-    - If the date is provided, load the last N lines from this date
+  - If None, will load the last N lines from file
+  - If the date is provided, load the last N lines from this date
 - date_column_name (str): Name of the date column. Defaults to `Date`
+- date_format (Optional[str]): Custom date format. In case pandas is unable to parse the date column. Default is None.
 - chunk_size (int): The size of data chunks loaded into memory.
-    The default is 6144 bytes (6 KB).
-        
+  The default is 6144 bytes (6 KB).
+
 I chose a 6Kb chunk size based on testing with my specific requirements.
 
 `csv_loader_v2.py` is the main file containing the function.
