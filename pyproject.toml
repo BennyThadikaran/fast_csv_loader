@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "fast_csv_loader"
-version = "1.0.0-1"
+version = "1.0.0-2"
 authors = [
   { name="Benny Thadikaran" },
 ]
@@ -26,8 +26,8 @@ dependencies = ["pandas >= 2, <3"]
 docs= ["furo==2024.8.6", "Sphinx==8.1.3"]
 
 [project.urls]
-"Homepage" = "https://github.com/BennyThadikaran/csv_loader"
-"Bug Tracker" = "https://github.com/BennyThadikaran/csv_loader/issues"
+"Homepage" = "https://github.com/BennyThadikaran/fast_csv_loader"
+"Bug Tracker" = "https://github.com/BennyThadikaran/fast_csv_loader/issues"
 
 [tool.hatch.build.targets.sdist]
 exclude = ["docs", "tests", ".github"]

@@ -10,7 +10,7 @@ fast_csv_loader
 
 Python version: >= 3.8
 
-GitHub Source: `BennyThadikaran/csv_loader <https://github.com/BennyThadikaran/csv_loader>`_
+GitHub Source: `BennyThadikaran/fast_csv_loader <https://github.com/BennyThadikaran/fast_csv_loader>`_
 
 The ``csv_loader`` function efficiently loads a partial portion of a large CSV file containing time-series data into a pandas DataFrame.
 
