@@ -50,11 +50,7 @@ Date,Price\n
 2023-12-01,200\n
 ```
 
-`run.py` measures the execution time of csv_loader vs. loading the entire file in Pandas DataFrame.
-
 ## Unit Test
-
-`test_csv_loader.py` is the unit test file.
 
 To run the test:
 
