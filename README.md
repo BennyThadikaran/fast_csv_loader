@@ -20,7 +20,7 @@ It also improves program execution time, when iterating or loading a large numbe
 
 ## Documentation
 
-`https://bennythadikaran.github.io/csv_loader/`
+[https://bennythadikaran.github.io/csv_loader/](https://bennythadikaran.github.io/csv_loader/)
 
 ## Performance
 
