@@ -3,8 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "csv_loader"
-version = "1.0.0"
+name = "fast_csv_loader"
+version = "1.0.0-1"
 authors = [
   { name="Benny Thadikaran" },
 ]

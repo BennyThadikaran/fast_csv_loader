@@ -11,7 +11,7 @@ Example
 
   import pandas as pd
 
-  from csv_loader import csv_loader
+  from fast_csv_loader import csv_loader
 
   file = Path("path/to/your/timeseries_data.csv")
 

@@ -3,10 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-csv_loader documentation
-========================
+fast_csv_loader
+===============
 
-**csv_loader** is a fast and memory efficient way to load large CSV files (Timeseries data) into Pandas Dataframes. 
+**fast_csv_loader** is a fast and memory efficient way to load large CSV files (Timeseries data) into Pandas Dataframes. 
 
 Python version: >= 3.8
 
@@ -21,17 +21,19 @@ The function allows:
 
 It can load any type of time-series (both timezone aware and Naive). It handles both daily or intraday data.
 
-**It is useful for loading large datasets that may not fit entirely into memory. It also improves program execution time, when iterating or loading a large number of CSV files.**
+**It is useful for loading large datasets that may not fit entirely into memory.**
+
+**It also improves program execution time, when iterating or loading a large number of CSV files.**
 
 ============
 Installation
 ============
 
-To use ``csv_loader``, first install it using pip:
+To use ``fast_csv_loader``, first install it using pip:
 
 .. code:: console
 
-   pip install csv_loader
+   pip install fast_csv_loader
 
 
 .. toctree::
