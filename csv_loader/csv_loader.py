@@ -7,7 +7,7 @@ from typing import Optional
 import pandas as pd
 
 
-def csv_loader_v2(
+def csv_loader(
     file_path: Path,
     period: int = 160,
     end_date: Optional[datetime] = None,
@@ -17,15 +17,35 @@ def csv_loader_v2(
 ) -> pd.DataFrame:
     """
     Load a CSV file with timeseries data in chunks from the end.
-    - file_path (Path): The path to the CSV file to be loaded.
-    - period (int): Number of lines/candles to return. The default is 160.
-    - end_date (Optional[datetime]): Load N lines up to this date.
-        - If None, will load the last N lines from file
-        - If the date is provided, load the last N lines from this date
-    - date_column_name (str): Name of the date column. Defaults to `Date`
-    - date_format (Optional[str]): Custom date format in case pandas is unable to parse Date column.
-    - chunk_size (int): The size of data chunks loaded into memory.
+
+    Could return an empty DataFrame, if no data was found.
+    Use ``df.empty`` to check if the DataFrame is empty before further processing.
+
+    :param file_path: The path to the CSV file to be loaded.
+    :type file_path: pathlib.Path
+
+    :param period: Number of lines/candles to return. The default is 160.
+    :type period: int
+
+    :param end_date: Load N lines up to this date.
+        If None, will load the last N lines from the file.
+        If the date is provided, load the last N lines from this date.
+    :type end_date: Optional[datetime]
+
+    :param date_column: Name of the date column. Defaults to ``Date``.
+    :type date_column: str
+
+    :param date_format: Custom date format in case pandas is unable to parse the date column.
+    :type date_format: Optional[str]
+
+    :param chunk_size: The size of data chunks loaded into memory.
         The default is 6144 bytes (6 KB).
+    :type chunk_size: int
+
+    :return: A DataFrame containing the loaded timeseries data.
+    :rtype: pd.DataFrame
+
+    :raise IndexError: if ``end_date`` is provided but not within the boundary of the data.
     """
 
     def get_date(start: int, chunk: bytes) -> datetime:

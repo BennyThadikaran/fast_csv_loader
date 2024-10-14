@@ -1,9 +1,10 @@
 import tempfile
-import pandas as pd
-import numpy as np
-from csv_loader_v2 import csv_loader_v2
-from pathlib import Path
 import unittest
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+from context import csv_loader
 
 
 def generate_random_prices(
@@ -21,7 +22,7 @@ def generate_random_prices(
     return df.set_index(index_col, drop=True)
 
 
-class Test_csv_loader_v2(unittest.TestCase):
+class Test_csv_loader(unittest.TestCase):
 
     def setUp(self) -> None:
         with tempfile.NamedTemporaryFile(delete=False) as f:
@@ -36,7 +37,7 @@ class Test_csv_loader_v2(unittest.TestCase):
         expected = generate_random_prices("2023-01-01", "2023-01-31")
         expected.to_csv(self.fname)
 
-        df = csv_loader_v2(self.fname)
+        df = csv_loader(self.fname)
 
         pd.testing.assert_frame_equal(df, expected)
 
@@ -46,7 +47,7 @@ class Test_csv_loader_v2(unittest.TestCase):
         df = generate_random_prices("2020-01-01", "2023-12-30")
         df.to_csv(self.fname)
 
-        df = csv_loader_v2(self.fname, chunk_size=1024 * 2)
+        df = csv_loader(self.fname, chunk_size=1024 * 2)
         self.assertEqual(len(df), 160)
 
     def test_intraday_data(self):
@@ -61,7 +62,7 @@ class Test_csv_loader_v2(unittest.TestCase):
 
         df.to_csv(self.fname)
 
-        df = csv_loader_v2(self.fname, chunk_size=1024 * 2)
+        df = csv_loader(self.fname, chunk_size=1024 * 2)
         self.assertEqual(len(df), 160)
 
     def test_empty_file(self):
@@ -71,7 +72,7 @@ class Test_csv_loader_v2(unittest.TestCase):
             fname = Path(f.name)
 
         with self.assertRaises(pd.errors.EmptyDataError):
-            csv_loader_v2(fname)
+            csv_loader(fname)
 
         fname.unlink()
 
@@ -82,7 +83,7 @@ class Test_csv_loader_v2(unittest.TestCase):
             fname = Path(f.name)
             f.write(b"Date,Price\n")
 
-        df = csv_loader_v2(fname)
+        df = csv_loader(fname)
         self.assertTrue(df.empty)
 
         fname.unlink()
@@ -95,7 +96,7 @@ class Test_csv_loader_v2(unittest.TestCase):
 
         expected = df.loc[:"2023-11-30"].iloc[-400:]
 
-        df = csv_loader_v2(
+        df = csv_loader(
             self.fname,
             end_date=pd.to_datetime("2023-11-30"),
             period=400,
@@ -116,7 +117,7 @@ class Test_csv_loader_v2(unittest.TestCase):
 
         df.to_csv(self.fname)
 
-        df = csv_loader_v2(
+        df = csv_loader(
             self.fname,
             chunk_size=1024 * 2,
             end_date=pd.to_datetime("2023-01-10T15:30"),
@@ -138,7 +139,7 @@ class Test_csv_loader_v2(unittest.TestCase):
 
         df.to_csv(self.fname)
 
-        df = csv_loader_v2(
+        df = csv_loader(
             self.fname,
             end_date=pd.to_datetime("2023-11-30"),
         )
@@ -155,7 +156,7 @@ class Test_csv_loader_v2(unittest.TestCase):
         df.to_csv(self.fname)
 
         with self.assertRaises(IndexError):
-            csv_loader_v2(
+            csv_loader(
                 self.fname,
                 period=20,
                 end_date=pd.to_datetime("2022-12-28"),
@@ -168,7 +169,7 @@ class Test_csv_loader_v2(unittest.TestCase):
         df.to_csv(self.fname)
 
         with self.assertRaises(IndexError):
-            csv_loader_v2(
+            csv_loader(
                 self.fname,
                 period=20,
                 end_date=pd.to_datetime("2019-12-28"),
@@ -182,7 +183,7 @@ class Test_csv_loader_v2(unittest.TestCase):
 
         expected = df.loc[:"2023-01-10"]
 
-        df = csv_loader_v2(
+        df = csv_loader(
             self.fname,
             period=20,
             end_date=pd.to_datetime("2023-01-10"),

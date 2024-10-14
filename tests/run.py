@@ -1,10 +1,10 @@
+import os
 import timeit
 from datetime import datetime
-from csv_loader_v1 import csv_loader_v1 as v1
-from csv_loader_v2 import csv_loader_v2 as v2
-import pandas as pd
-import os
 from pathlib import Path
+
+import pandas as pd
+from context import csv_loader
 
 
 def read_csv(fpath, end_date=None, period=160):
@@ -59,18 +59,11 @@ for sym in sym_list:
     print_perf(read_csv, regular_time)
 
     ts = timeit.timeit(
-        stmt=lambda: v1(file_path),
+        stmt=lambda: csv_loader(file_path),
         number=100,
     )
 
-    print_perf(v1, ts, base_time=regular_time)
-
-    ts1 = timeit.timeit(
-        stmt=lambda: v2(file_path),
-        number=100,
-    )
-
-    print_perf(v2, ts1, base_time=regular_time)
+    print_perf(csv_loader, ts, base_time=regular_time)
 
 
 # Second test - end_date
@@ -90,15 +83,8 @@ for sym in sym_list:
     print_perf(read_csv, regular_time)
 
     ts = timeit.timeit(
-        stmt=lambda: v1(file_path, end_date=dt),
+        stmt=lambda: csv_loader(file_path, end_date=dt),
         number=100,
     )
 
-    print_perf(v1, ts, base_time=regular_time)
-
-    ts1 = timeit.timeit(
-        stmt=lambda: v2(file_path, end_date=dt),
-        number=100,
-    )
-
-    print_perf(v2, ts1, base_time=regular_time)
+    print_perf(csv_loader, ts, base_time=regular_time)

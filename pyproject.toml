@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "csv_loader"
+version = "1.0.0"
+authors = [
+  { name="Benny Thadikaran" },
+]
+description = "A fast and memory efficient way to load large CSV files (Timeseries data) into Pandas"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+keywords = ["pandas-dataframe", "python3", "memory-efficient", "csv-reader", "csv-loader"]
+dependencies = ["pandas >= 2, <3"]
+
+[project.optional-dependencies]
+docs= ["furo==2024.8.6", "Sphinx==8.1.3"]
+
+[project.urls]
+"Homepage" = "https://github.com/BennyThadikaran/csv_loader"
+"Bug Tracker" = "https://github.com/BennyThadikaran/csv_loader/issues"
+
+[tool.hatch.build.targets.sdist]
+exclude = ["docs", "tests", ".github"]
+
+[tool.hatch.build.targets.wheel]
+exclude = ["docs", "tests", ".github"]
