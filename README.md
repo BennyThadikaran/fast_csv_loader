@@ -16,7 +16,7 @@ It also improves program execution time, when iterating or loading a large numbe
 
 ## Install
 
-`pip install fast_csv_loader`
+`pip install fast-csv-loader`
 
 ## Documentation
 

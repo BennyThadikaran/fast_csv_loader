@@ -33,7 +33,7 @@ To use ``fast_csv_loader``, first install it using pip:
 
 .. code:: console
 
-   pip install fast_csv_loader
+   pip install fast-csv-loader
 
 
 .. toctree::
