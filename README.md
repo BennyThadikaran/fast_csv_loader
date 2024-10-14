@@ -59,5 +59,5 @@ Date,Price\n
 To run the test:
 
 ```bash
-py src/tests/test_csv_loader.py
+py tests/test_csv_loader.py
 ```
