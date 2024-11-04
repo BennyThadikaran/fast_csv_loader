@@ -148,7 +148,11 @@ def csv_loader(
 
                 # start storing chunks once end date has reached
                 if current_dt <= end_date:
-                    lines_read += lines_per_chunk
+
+                    # Dont count the first chunk. If end_dt is near the start of
+                    # the chunk, extra lines will be counted, resulting in fewer
+                    # lines being returned than expected.
+                    lines_read += 1 if lines_read == 0 else lines_per_chunk
 
                     if prev_chunk_start_line:
                         # As we append the first chunk, the last line of chunk
