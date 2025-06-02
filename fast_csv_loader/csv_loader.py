@@ -95,7 +95,6 @@ def csv_loader(
 
     # Open in binary mode and read from end of file
     with file_path.open(mode="rb") as f:
-
         # Read the first line of file to get column names
         columns = f.readline()
         first_row_pos = f.tell()
@@ -110,7 +109,6 @@ def csv_loader(
         lines_per_chunk = lines_read = 0
 
         while curr_pos >= first_row_pos:
-
             read_size = min(chunk_size, curr_pos - first_row_pos)
 
             if read_size == 0:
@@ -130,7 +128,6 @@ def csv_loader(
 
             # Get N lines upto end_date
             if end_date:
-
                 # First line in a chunk may not be complete line
                 # So skip the first line and parse the first date in chunk
                 start = chunk.find(b"\n")
@@ -144,7 +141,6 @@ def csv_loader(
 
                 # start storing chunks once end date has reached
                 if current_dt <= end_date:
-
                     # Dont count the first chunk. If end_dt is near the start of
                     # the chunk, extra lines will be counted, resulting in fewer
                     # lines being returned than expected.
