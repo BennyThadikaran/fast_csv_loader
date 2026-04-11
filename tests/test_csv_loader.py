@@ -7,23 +7,21 @@ import pandas as pd
 from context import csv_loader
 
 
-def generate_random_prices(
-    start_date, end_date, freq="D", tz=None, index_col="Date"
-):
+def generate_random_prices(start_date, end_date, freq="D", tz=None, index_col="Date"):
     """
     Generate random prices for a given date range.
     """
     date_range = pd.date_range(start=start_date, end=end_date, freq=freq, tz=tz)
 
     prices = np.random.randint(10, 100, size=len(date_range))
+    prev = np.roll(prices, 1)
 
-    df = pd.DataFrame({index_col: date_range, "Price": prices})
+    df = pd.DataFrame({index_col: date_range, "Price": prices, "Prev": prev})
     df[index_col] = pd.to_datetime(df[index_col])
     return df.set_index(index_col, drop=True)
 
 
 class Test_csv_loader(unittest.TestCase):
-
     def setUp(self) -> None:
         with tempfile.NamedTemporaryFile(delete=False) as f:
             self.fname = Path(f.name)
@@ -49,6 +47,16 @@ class Test_csv_loader(unittest.TestCase):
 
         df = csv_loader(self.fname, chunk_size=1024 * 2)
         self.assertEqual(len(df), 160)
+
+    def test_load_single_column(self):
+        """Returns a DataFrame of length 160"""
+
+        df = generate_random_prices("2020-01-01", "2023-12-30")
+        df.to_csv(self.fname)
+
+        df = csv_loader(self.fname, chunk_size=1024 * 2, use_columns=["Date", "Price"])
+
+        self.assertTrue("Price" in df.columns)
 
     def test_intraday_data(self):
         """Returns a DataFrame of length 160"""
@@ -123,9 +131,7 @@ class Test_csv_loader(unittest.TestCase):
             end_date=pd.to_datetime("2023-01-10T15:30"),
         )
 
-        end_date = pd.to_datetime("2023-01-10T15:30").tz_localize(
-            "America/New_York"
-        )
+        end_date = pd.to_datetime("2023-01-10T15:30").tz_localize("America/New_York")
 
         self.assertEqual(len(df), 160)
         self.assertEqual(df.index[-1], end_date)
@@ -133,9 +139,7 @@ class Test_csv_loader(unittest.TestCase):
     def test_end_date_with_tz_aware_dates(self):
         """Test returns partial data upto end date"""
 
-        df = generate_random_prices(
-            "2020-01-01", "2023-12-31", tz="America/New_York"
-        )
+        df = generate_random_prices("2020-01-01", "2023-12-31", tz="America/New_York")
 
         df.to_csv(self.fname)
 

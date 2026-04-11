@@ -2,7 +2,7 @@ import io
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
 import pandas as pd
 
@@ -12,6 +12,7 @@ def csv_loader(
     period: int = 160,
     end_date: Optional[datetime] = None,
     date_format: Optional[str] = None,
+    use_columns: Optional[List[str]] = None,
     chunk_size: int = 1024 * 6,
 ) -> pd.DataFrame:
     """
@@ -75,6 +76,7 @@ def csv_loader(
             index_col=[0],
             parse_dates=[0],
             date_format=date_format,
+            usecols=pd.Index(use_columns) if use_columns else None,
         )
 
         if end_date:
@@ -194,6 +196,7 @@ def csv_loader(
         parse_dates=[0],
         index_col=[0],
         date_format=date_format,
+        usecols=pd.Index(use_columns) if use_columns else None,
     )
 
     if end_date:
