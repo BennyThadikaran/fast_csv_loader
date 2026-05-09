@@ -76,11 +76,10 @@ def cached_csv_loader(
     the cache lookup (different ``period`` values share the same cached
     frame and just take a different tail slice).
 
-    Returns an empty DataFrame if the file cannot be loaded.
+    Raises FileNotFoundError if the file does not exist, matching csv_loader behaviour.
     """
-    file_path = Path(file_path)
     if not file_path.exists():
-        return pd.DataFrame()
+        raise FileNotFoundError(f"No such file or directory: '{file_path}'")
 
     try:
         mtime = file_path.stat().st_mtime
@@ -95,13 +94,14 @@ def cached_csv_loader(
         if entry and entry[0] == mtime:
             _stats["hits"] += 1
             df = entry[1]
-            return df.iloc[-period:] if period and len(df) > period else df.copy()
+            return df.iloc[-period:].copy() if period and len(df) > period else df.copy()
 
     # Cache miss — load with enough history that later calls with larger
     # `period` values can still be served from cache. We load a generous
     # buffer by passing period * 4 (min 1000) to the underlying loader.
     load_period = max(period * 4, 1000) if period else 10_000
-    _stats["misses"] += 1
+    with _cache_lock:
+        _stats["misses"] += 1
     df = csv_loader(
         file_path,
         period=load_period,
@@ -115,7 +115,7 @@ def cached_csv_loader(
         _cache[cache_key] = (mtime, df)
         _evict_if_full()
 
-    return df.iloc[-period:] if period and len(df) > period else df.copy()
+    return df.iloc[-period:].copy() if period and len(df) > period else df.copy()
 
 
 def invalidate(file_path) -> int:
