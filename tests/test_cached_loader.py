@@ -107,9 +107,9 @@ class TestCachedLoader(unittest.TestCase):
         self.assertEqual(len(df50), 50)
         self.assertEqual(len(df100), 100)
 
-    def test_missing_file_returns_empty(self):
-        result = cached_csv_loader(self.tmpdir / "does_not_exist.csv")
-        self.assertTrue(result.empty)
+    def test_missing_file_raises_filenotfounderror(self):
+        with self.assertRaises(FileNotFoundError):
+            cached_csv_loader(self.tmpdir / "does_not_exist.csv")
 
     def test_eviction(self):
         """With a max of 2, the 3rd distinct file should evict older entries."""
