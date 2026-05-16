@@ -4,7 +4,7 @@ requires = [ "hatchling" ]
 
 [project]
 name = "fast-csv-loader"
-version = "2.1.0"
+version = "2.2.0"
 description = "A fast and memory efficient way to load large CSV files (Timeseries data) into Pandas"
 readme = "README.md"
 keywords = [ "csv-loader", "csv-reader", "memory-efficient", "pandas-dataframe", "python3" ]

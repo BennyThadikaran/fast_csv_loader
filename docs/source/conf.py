@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-src = Path(__file__).parents[2].resolve() / "fast_csv_loader"
+src = Path(__file__).parents[2].resolve()
 
 sys.path.insert(0, src.as_posix())
 
@@ -16,7 +16,7 @@ sys.path.insert(0, src.as_posix())
 project = "fast_csv_loader"
 copyright = "2024, Benny Thadikaran"
 author = "Benny Thadikaran"
-release = "2.1.0"
+release = "2.2.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
