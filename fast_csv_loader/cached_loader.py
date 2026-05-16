@@ -66,17 +66,50 @@ def cached_csv_loader(
     chunk_size: int = 1024 * 6,
 ) -> pd.DataFrame:
     """
-    Mtime-aware cached wrapper around csv_loader.
+    .. versionadded:: 2.2.0
 
-    Signature is identical to csv_loader — drop-in replacement wherever
-    the same file may be read multiple times in the same process.
+    Mtime-aware cached wrapper around ``csv_loader``.
 
-    Cache keys include (file_path, end_date, use_columns) so different
-    argument shapes are stored separately. The period is applied AFTER
-    the cache lookup (different ``period`` values share the same cached
-    frame and just take a different tail slice).
+    Provides a drop-in replacement for ``csv_loader`` for cases where the
+    same CSV file may be read multiple times within the same process. Results
+    are cached based on file path, modification time, and selected query
+    parameters.
 
-    Raises FileNotFoundError if the file does not exist, matching csv_loader behaviour.
+    The cache key is composed of (file_path, end_date, date_format,
+    use_columns). The ``period`` parameter is NOT part of the cache key and
+    is applied after cache retrieval, meaning different ``period`` values
+    reuse the same cached DataFrame and only affect the returned slice.
+
+    If the underlying file has changed (based on mtime), the cache entry is
+    invalidated and the file is reloaded.
+
+    :param file_path: The path to the CSV file to be loaded.
+    :type file_path: pathlib.Path
+
+    :param period: Number of rows/candles to return from the end of the
+        dataset. Default is 160.
+    :type period: int
+
+    :param end_date: Load data up to this timestamp. If None, the most
+        recent data is used. If provided, loading is anchored to this date.
+    :type end_date: Optional[datetime]
+
+    :param date_format: Custom datetime format string used for parsing the
+        CSV date column if automatic parsing fails.
+    :type date_format: Optional[str]
+
+    :param use_columns: List of column names to load from the CSV file.
+        If None, all columns are loaded.
+    :type use_columns: Optional[List[str]]
+
+    :param chunk_size: Size of chunks (in bytes) used when reading the CSV
+        file. Default is 6144 bytes (6 KB).
+    :type chunk_size: int
+
+    :return: A DataFrame containing the requested slice of timeseries data.
+    :rtype: pd.DataFrame
+
+    :raise FileNotFoundError: If ``file_path`` does not exist.
     """
     if not file_path.exists():
         raise FileNotFoundError(f"No such file or directory: '{file_path}'")
@@ -94,7 +127,9 @@ def cached_csv_loader(
         if entry and entry[0] == mtime:
             _stats["hits"] += 1
             df = entry[1]
-            return df.iloc[-period:].copy() if period and len(df) > period else df.copy()
+            return (
+                df.iloc[-period:].copy() if period and len(df) > period else df.copy()
+            )
 
     # Cache miss — load with enough history that later calls with larger
     # `period` values can still be served from cache. We load a generous
@@ -120,11 +155,19 @@ def cached_csv_loader(
 
 def invalidate(file_path) -> int:
     """
-    Drop all cache entries for a given file (any end_date/columns combo).
-    Returns the number of entries removed.
+    .. versionadded:: 2.2.0
 
-    Useful to call after writing new data to a file if you don't want to
-    wait for the automatic mtime-based invalidation on the next read.
+    Drop all cache entries for a given file (any ``end_date`` / columns combination).
+
+    Useful after writing new data to disk when you want to ensure subsequent
+    reads do not return stale cached results. Otherwise, cache entries are
+    invalidated automatically based on file modification time.
+
+    :param file_path: Path of the file whose cache entries should be removed.
+    :type file_path: pathlib.Path | str
+
+    :return: Number of cache entries removed for the given file.
+    :rtype: int
     """
     target = str(Path(file_path).resolve())
     with _cache_lock:
@@ -135,7 +178,17 @@ def invalidate(file_path) -> int:
 
 
 def invalidate_all() -> int:
-    """Drop every entry in the cache. Returns the number of entries removed."""
+    """
+    .. versionadded:: 2.2.0
+
+    Drop all entries from the cache.
+
+    Useful for resetting cache state entirely, for example during testing or
+    after bulk data updates.
+
+    :return: Number of cache entries removed.
+    :rtype: int
+    """
     with _cache_lock:
         n = len(_cache)
         _cache.clear()
@@ -143,22 +196,50 @@ def invalidate_all() -> int:
 
 
 def cache_stats() -> dict:
-    """Observability — return hit/miss counters, size, and hit rate."""
+    """
+    .. versionadded:: 2.2.0
+
+    Return cache observability metrics including hit/miss counts, current
+    cache size, and hit rate.
+
+    :return: Dictionary containing cache statistics:
+
+        - ``hits``: Number of cache hits
+        - ``misses``: Number of cache misses
+        - ``evictions``: Number of evicted entries
+        - ``size``: Current number of cached entries
+        - ``hit_rate``: Cache hit rate as a percentage (rounded to 1 decimal)
+        - ``max_size``: Maximum allowed cache size
+
+    :rtype: dict
+    """
     with _cache_lock:
         total = _stats["hits"] + _stats["misses"]
         hit_rate = (_stats["hits"] / total * 100) if total else 0.0
         return {
-            "hits":       _stats["hits"],
-            "misses":     _stats["misses"],
-            "evictions":  _stats["evictions"],
-            "size":       len(_cache),
-            "hit_rate":   round(hit_rate, 1),
-            "max_size":   _MAX_CACHE_ENTRIES,
+            "hits": _stats["hits"],
+            "misses": _stats["misses"],
+            "evictions": _stats["evictions"],
+            "size": len(_cache),
+            "hit_rate": round(hit_rate, 1),
+            "max_size": _MAX_CACHE_ENTRIES,
         }
 
 
 def set_max_cache_size(n: int) -> None:
-    """Adjust the max number of cached entries. Must be > 0."""
+    """
+    .. versionadded:: 2.2.0
+
+    Set the maximum number of cached entries allowed.
+
+    If the cache exceeds this size, older entries will be evicted
+    automatically.
+
+    :param n: New maximum cache size. Must be greater than 0.
+    :type n: int
+
+    :raise ValueError: If ``n`` is less than or equal to 0.
+    """
     global _MAX_CACHE_ENTRIES
     if n <= 0:
         raise ValueError("max cache size must be > 0")
