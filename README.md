@@ -22,6 +22,45 @@ It also improves program execution time, when iterating or loading a large numbe
 
 [https://bennythadikaran.github.io/fast_csv_loader/](https://bennythadikaran.github.io/fast_csv_loader/)
 
+## Cached Loader (mtime-aware)
+
+For workloads where the same files are read repeatedly — scanners looping
+over symbol CSVs, dashboards re-rendering, rolling backtests — use
+`cached_csv_loader`. It wraps `csv_loader` with an in-memory cache that
+automatically invalidates when the file's modification time changes.
+
+```python
+from fast_csv_loader import cached_csv_loader, cache_stats, invalidate_all
+from pathlib import Path
+
+# First call: reads from disk
+df = cached_csv_loader(Path("AAPL.csv"), period=200)
+
+# Subsequent calls on same file: served from cache (O(1))
+df = cached_csv_loader(Path("AAPL.csv"), period=200)
+
+# After your EOD job writes new data, the next call auto-invalidates
+# (mtime changed on disk). For explicit control:
+from fast_csv_loader import invalidate
+invalidate("AAPL.csv")     # drop one file
+invalidate_all()           # drop everything
+
+# Observability
+print(cache_stats())
+# {'hits': 49, 'misses': 1, 'evictions': 0, 'size': 1, 'hit_rate': 98.0, 'max_size': 500}
+```
+
+Benchmark on 133 small daily CSVs (~12 KB each), 5 repeat passes:
+
+```
+csv_loader (no cache):         ~555 ms
+cached_csv_loader (warm):       ~13 ms    (~43x faster)
+```
+
+The cache is process-local and thread-safe. Entries are evicted in
+insertion order when the cache exceeds `max_size` (default 500). Adjust
+with `set_max_cache_size(n)`.
+
 ## Performance
 
 Loading a portion of a large file is significantly faster than loading the entire file in memory.
