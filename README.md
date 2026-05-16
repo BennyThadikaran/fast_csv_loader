@@ -14,6 +14,11 @@ It also improves program execution time, when iterating or loading a large numbe
 
 **Supports Python >= 3.8**
 
+> **Note (v2.2.0):** This release introduces `cached_csv_loader`, an optional drop-in caching layer for `csv_loader` that significantly improves performance for repeated file reads. Existing behavior remains unchanged. Users are encouraged to review the updated documentation for details on cache behavior, invalidation, and configuration options.
+>
+> This feature was contributed by GitHub user **sai2311-eng**.
+
+
 ## Install
 
 `pip install fast-csv-loader`
