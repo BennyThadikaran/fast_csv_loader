@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Usage" href="Usage.html" />
 
     <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
-        <title>fast_csv_loader 2.1.0 documentation</title>
+        <title>fast_csv_loader 2.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
@@ -166,7 +166,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="#"><div class="brand">fast_csv_loader 2.1.0 documentation</div></a>
+      <a href="#"><div class="brand">fast_csv_loader 2.2.0 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -190,7 +190,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="#">
   
   
-  <span class="sidebar-brand-text">fast_csv_loader 2.1.0 documentation</span>
+  <span class="sidebar-brand-text">fast_csv_loader 2.2.0 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -255,8 +255,14 @@
 <p>It can load any type of time-series (both timezone aware and Naive). It handles both daily or intraday data.</p>
 <p><strong>It is useful for loading large datasets that may not fit entirely into memory.</strong></p>
 <p><strong>It also improves program execution time, when iterating or loading a large number of CSV files.</strong></p>
+<section id="cached-csv-loader-added-in-v2-2-0">
+<h2>cached_csv_loader (Added in v2.2.0)<a class="headerlink" href="#cached-csv-loader-added-in-v2-2-0" title="Link to this heading">¶</a></h2>
+<p><cite>cached_csv_loader</cite> is a performance optimization wrapper around <cite>csv_loader</cite> designed for workloads that repeatedly read the same CSV files.</p>
+<p>Instead of re-reading and re-parsing a file from disk every time, it keeps an in-memory cache of recently loaded DataFrames. On subsequent calls with the same file and parameters, it returns the cached result instantly. The cache automatically invalidates when the underlying file changes (based on modification time), so it stays correct even if data is updated on disk.</p>
+<p>This is useful in scenarios like trading scanners, dashboards, or backtests where the same set of CSV files is accessed repeatedly in loops or periodic refresh cycles. In those cases, disk I/O and CSV parsing become unnecessary overhead after the first load.</p>
+<p>Thanks to <a class="reference external" href="https://github.com/sai2311-eng">&#64;sai2311-eng</a> for his contribution.</p>
 <section id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
+<h3>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h3>
 <p>To use <code class="docutils literal notranslate"><span class="pre">fast_csv_loader</span></code>, first install it using pip:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip install fast-csv-loader</span>
 </pre></div>
@@ -264,9 +270,15 @@
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="Usage.html">Usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Usage.html#example">Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Usage.html#example-using-csv-loader">Example using csv_loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Usage.html#example-using-cached-csv-loader">Example using cached_csv_loader</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Usage.html#api">API</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="Usage.html#csv_loader.csv_loader"><code class="docutils literal notranslate"><span class="pre">csv_loader()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Usage.html#fast_csv_loader.csv_loader"><code class="docutils literal notranslate"><span class="pre">csv_loader()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Usage.html#fast_csv_loader.cached_csv_loader"><code class="docutils literal notranslate"><span class="pre">cached_csv_loader()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Usage.html#fast_csv_loader.invalidate"><code class="docutils literal notranslate"><span class="pre">invalidate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Usage.html#fast_csv_loader.invalidate_all"><code class="docutils literal notranslate"><span class="pre">invalidate_all()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Usage.html#fast_csv_loader.cache_stats"><code class="docutils literal notranslate"><span class="pre">cache_stats()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Usage.html#fast_csv_loader.set_max_cache_size"><code class="docutils literal notranslate"><span class="pre">set_max_cache_size()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -274,6 +286,7 @@
 <li class="toctree-l1"><a class="reference internal" href="Algorithm.html">Algorithm</a></li>
 </ul>
 </div>
+</section>
 </section>
 </section>
 
@@ -323,7 +336,10 @@
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">fast_csv_loader</a><ul>
+<li><a class="reference internal" href="#cached-csv-loader-added-in-v2-2-0">cached_csv_loader (Added in v2.2.0)</a><ul>
 <li><a class="reference internal" href="#installation">Installation</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -335,7 +351,7 @@
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=20623aea"></script>
+</div><script src="_static/documentation_options.js?v=b21de401"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=5fa4622c"></script>

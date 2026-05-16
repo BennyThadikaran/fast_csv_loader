@@ -1,8 +1,8 @@
 Usage
 =====
 
-Example
--------
+Example using csv_loader
+------------------------
 
 .. code-block:: python
 
@@ -38,7 +38,45 @@ Example
   # Increase the `chunk_size` to optimize performance based of your specific needs.
   df = csv_loader(file_path=file, chunk_size=1024 * 10)
 
+Example using cached_csv_loader
+-------------------------------
+
+.. note::
+   `cached_csv_loader` was introduced in version 2.2.0
+
+.. code-block:: python
+
+  from fast_csv_loader import (
+      cached_csv_loader,
+      invalidate, invalidate_all,
+      cache_stats, set_max_cache_size,
+  )
+
+  df = cached_csv_loader(Path("AAPL.csv"), period=200)   # disk read
+  df = cached_csv_loader(Path("AAPL.csv"), period=200)   # cache hit
+
+  # Auto-invalidates when file mtime changes (e.g. after EOD sync overwrites)
+  # For explicit invalidation:
+  invalidate("AAPL.csv")
+  invalidate_all()
+
+  # Observability:
+  cache_stats()
+  # {'hits': 49, 'misses': 1, 'evictions': 0, 'size': 1, 'hit_rate': 98.0, 'max_size': 500}
+
+
 API
 ---
 
-.. autofunction:: csv_loader.csv_loader
+.. autofunction:: fast_csv_loader.csv_loader
+
+.. autofunction:: fast_csv_loader.cached_csv_loader
+
+.. autofunction:: fast_csv_loader.invalidate
+
+.. autofunction:: fast_csv_loader.invalidate_all
+
+.. autofunction:: fast_csv_loader.cache_stats
+
+.. autofunction:: fast_csv_loader.set_max_cache_size
+
