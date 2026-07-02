@@ -99,9 +99,9 @@ def cached_csv_loader(
         CSV date column if automatic parsing fails.
     :type date_format: Optional[str]
 
-    :param use_columns: List of column names to load from the CSV file.
-        If None, all columns are loaded.
-    :type use_columns: Optional[List[str]]
+    :param use_columns: Default None. A sequence (e.g., list or tuple) of column names to load
+        from the CSV file. If None, all columns are loaded.
+    :type use_columns: Optional[Sequence[str]]
 
     :param chunk_size: Size of chunks (in bytes) used when reading the CSV
         file. Default is 6144 bytes (6 KB).

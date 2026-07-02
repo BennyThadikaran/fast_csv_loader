@@ -35,8 +35,9 @@ def csv_loader(
     :param date_format: Custom date format in case pandas is unable to parse the date column.
     :type date_format: Optional[str]
 
-    :param use_columns: Default None. List of column names to load from the CSV file. If None, all columns are loaded.
-    :type use_columns: Optional[List[str]]
+    :param use_columns: Default None. A sequence (e.g., list or tuple) of column names to load
+        from the CSV file. If None, all columns are loaded.
+    :type use_columns: Optional[Sequence[str]]
 
     :param chunk_size: The size of data chunks loaded into memory.
         The default is 6144 bytes (6 KB).
