@@ -33,5 +33,5 @@ urls."Bug Tracker" = "https://github.com/BennyThadikaran/fast_csv_loader/issues"
 urls.Homepage = "https://github.com/BennyThadikaran/fast_csv_loader"
 
 [tool.hatch]
-build.targets.sdist.exclude = [ "docs", "tests", ".github" ]
-build.targets.wheel.exclude = [ "docs", "tests", ".github" ]
+build.targets.wheel.exclude = [ ".github", "docs", "tests" ]
+build.targets.sdist.exclude = [ ".github", "docs", "tests" ]
