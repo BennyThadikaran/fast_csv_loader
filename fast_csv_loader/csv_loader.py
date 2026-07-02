@@ -2,8 +2,8 @@ import io
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, List
-
+from typing import Optional
+from collections.abc import Sequence
 import pandas as pd
 
 
@@ -12,7 +12,7 @@ def csv_loader(
     period: int = 160,
     end_date: Optional[datetime] = None,
     date_format: Optional[str] = None,
-    use_columns: Optional[List[str]] = None,
+    use_columns: Optional[Sequence[str]] = None,
     chunk_size: int = 1024 * 6,
 ) -> pd.DataFrame:
     """
