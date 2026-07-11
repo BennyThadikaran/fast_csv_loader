@@ -2,8 +2,7 @@ import io
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
-from collections.abc import Sequence
+from typing import Optional, Sequence
 import pandas as pd
 
 
